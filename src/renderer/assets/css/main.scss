@@ -1,0 +1,21 @@
+@tailwind base;
+
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+/* @import './assets/css/tailwind.css'; */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+button:focus {
+  outline: none;
+}
+
+@tailwind components;
+@tailwind utilities;
