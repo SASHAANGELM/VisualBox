@@ -14,9 +14,17 @@
     <div class="controls">
       <div class="drag-area"></div>
       <div class="h-full flex-shrink-0">
-        <button class="btn" @click="controlMinimize">_</button>
-        <button class="btn" @click="controlMaximize">o</button>
-        <button class="btn close" @click="controlClose">x</button>
+        <button class="btn minimaze" @click="controlMinimize">
+          <div class="line"></div>
+        </button>
+        <button :class="{maximized: isMaximized}" class="btn maximize" @click="controlMaximize">
+          <div class="box"></div>
+          <div class="box"></div>
+        </button>
+        <button class="btn close" @click="controlClose">
+          <div class="line"></div>
+          <div class="line"></div>
+        </button>
       </div>
     </div>
   </div>
@@ -24,13 +32,18 @@
 
 <script>
 export default {
+  data() {
+    return {
+      isMaximized: false
+    }
+  },
   computed: {
     currentWindow() {
       return this.$electron.remote.getCurrentWindow();
     }
   },
   created() {
-    console.log('close', this.currentWindow);
+    this.isMaximized = this.currentWindow.isMaximized();
   },
   methods: {
     controlMinimize() {
@@ -38,9 +51,11 @@ export default {
     },
     controlMaximize() {
       if (this.currentWindow.isMaximized()) {
-        this.currentWindow.unmaximize()
-        } else {
+        this.currentWindow.unmaximize();
+        this.isMaximized = false;
+      } else {
         this.currentWindow.maximize();
+        this.isMaximized = true;
       }
     },
     controlClose() {
@@ -57,9 +72,10 @@ export default {
   position: relative;
   display: flex;
   align-items: center;
-  height: 35px;
+  height: 30px;
   background-color: rgb(40,48,56);
   color: rgba(255,255,255,0.5);
+  font-size: 14px;
 
   &:before {
     content: '';
@@ -103,13 +119,82 @@ export default {
     justify-content: flex-end;
 
     .btn {
-      width: 50px;
+      position: relative;
+      width: 45px;
+
+      &.minimaze {
+
+        .line {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 12px;
+          height: 1px;
+          margin-left: -6px;
+          background-color: #fff;
+          opacity: 0.5;
+        }
+      }
+
+      &.maximize {
+
+        &.maximized {
+
+          .box { 
+            width: 9px;
+            height: 9px;
+            
+            &:nth-child(1) {
+              margin: -6px 0 0 -4px;
+            }
+            &:nth-child(2) {
+              margin: -4px 0 0 -6px;
+            }
+          }
+        }
+
+        .box {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 10px;
+          height: 10px;
+          border: 1px solid rgba(#fff, 0.5);
+          background-color: rgb(40,48,56);
+          
+          
+          &:nth-child(1) {
+            margin: -6px 0 0 -6px;
+          }
+          &:nth-child(2) {
+            margin: -6px 0 0 -6px;
+          }
+        }
+      }
 
       &.close {
 
         &:hover {
           background-color: #f44336;
           border-bottom-color: transparent;
+        }
+
+        .line {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 16px;
+          height: 1px;
+          margin-left: -8px;
+          background-color: #fff;
+          opacity: 0.5;
+
+          &:nth-child(1) {
+            transform: rotate(45deg)
+          }
+          &:nth-child(2) {
+            transform: rotate(-45deg)
+          }
         }
       }
     }

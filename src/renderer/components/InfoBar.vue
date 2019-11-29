@@ -15,10 +15,11 @@ export default {
   .infobar {
     display: flex;
     align-items: center;
+    position: relative;
     height: 35px;
     background-color: rgb(40,48,56);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
     color: rgba(255,255,255,0.5);
+    font-size: 14px;
 
     &:before {
       content: '';
