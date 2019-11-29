@@ -17,9 +17,7 @@ export default {
     align-items: center;
     position: relative;
     height: 35px;
-    background-color: rgb(40,48,56);
-    color: rgba(255,255,255,0.5);
-    font-size: 14px;
+    font-size: 12px;
 
     &:before {
       content: '';

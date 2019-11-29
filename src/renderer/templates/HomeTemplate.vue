@@ -20,11 +20,11 @@ export default {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: rgb(40,40,40);
+    color: rgba(255,255,255,0.5);
 
     .content {
       flex: 1 0 auto;
-      background-color: rgb(40,48,56);
-      color: rgba(255,255,255,0.5);
     }
   }
 </style>

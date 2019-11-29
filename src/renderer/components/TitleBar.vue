@@ -73,9 +73,7 @@ export default {
   display: flex;
   align-items: center;
   height: 30px;
-  background-color: rgb(40,48,56);
-  color: rgba(255,255,255,0.5);
-  font-size: 14px;
+  font-size: 12px;
 
   &:before {
     content: '';

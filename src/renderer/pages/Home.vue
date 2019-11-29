@@ -13,7 +13,7 @@
         <button class="tab new" @click="createEmptyFile">+</button>
       </div>
       <div class="space">
-        <div class="grid">grid</div>
+        <GridComponent></GridComponent>
         <div class="code">code</div>
       </div>
     </div>
@@ -21,7 +21,10 @@
 </template>
 
 <script>
+import GridComponent from '@/components/GridComponent';
+
 export default {
+  components: { GridComponent },
   data() {
     return {
       openedFile: [
@@ -79,8 +82,6 @@ export default {
     position: relative;
     width: 100%;
     height: 35px;
-    background-color: rgb(40,48,56);
-    color: rgba(255,255,255,0.5);
     font-size: 14px;
 
     &:before {
@@ -122,6 +123,7 @@ export default {
         margin-left: 10px;
         text-align: center;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
 
         &:hover {
           background-color: rgba(255, 255, 255, 0.1);
@@ -153,10 +155,7 @@ export default {
     flex: 1 1 auto;
     display: flex;
     
-    .grid {
-      width: 60%;
-      border-right: 1px solid rgba(255, 255, 255, 0.1);
-    }
+    
 
     .code {
       width: 40%;
