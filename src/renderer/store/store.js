@@ -96,18 +96,26 @@ const store = new Vuex.Store({
 });
 store.state.grid.nodes.push(
   new Node({
+    x: 0,
+    y: 0,
     z: 7,
     value: 55,
   }),
   new Node({
+    x: 11,
+    y: 1,
     z: 7,
     value: 'test',
   }),
   new Node({
+    x: 1,
+    y: 6,
     z: 7,
     value: true,
   }),
   new Node({
+    x: 7,
+    y: 11,
     z: 7,
     value: {},
   }),

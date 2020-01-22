@@ -120,7 +120,7 @@ export default {
     	this.drag = false;
     },
     keydownEvent(event) {
-    	event.preventDefault();
+    	// event.preventDefault();
     	console.log('keypress', event);
       if(event.key === 'h' && event.ctrlKey) {
         this.gridCentering();

@@ -11,7 +11,8 @@ export default class Node {
       value: '25.56',
       kind: 'float',
       input: [],
-      output: []
+      output: [],
+      selected: false
     };
 
     const mergedProps = {...defaultProps, ...props };
@@ -26,6 +27,7 @@ export default class Node {
     this.input = mergedProps.input;
     this.raw = `'${this.value}'`;
     this.output = mergedProps.output;
+    this.selected = mergedProps.selected
 
     console.log('node', this);
   }

@@ -14,19 +14,28 @@
       </div>
       <div class="space">
         <GridComponent></GridComponent>
-        <div class="code">code</div>
+        <div class="code">
+          code: {{ value }}
+          <!-- <MonacoEditor height="500"
+                        theme="vs-dark"
+                        @change="onChange">
+          </MonacoEditor> -->
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+// import MonacoEditor from 'monaco-editor-vue';
+
 import GridComponent from '@/components/GridComponent';
 
 export default {
   components: { GridComponent },
   data() {
     return {
+      value: '',
       openedFile: [
         {
           id: 1,
@@ -58,7 +67,10 @@ export default {
     closeFile(file) {
       const index = this.openedFile.indexOf(file);
       this.openedFile.splice(index, 1);
-    }
+    },
+    // onChange(value) {
+    //   this.value = value;
+    // }
   }
 }
 </script>

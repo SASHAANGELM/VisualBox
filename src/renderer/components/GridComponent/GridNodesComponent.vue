@@ -1,7 +1,7 @@
 <template>
   <div class="grid-nodes">
-    <div v-if="dragNodes.length > 0">
-      <div v-for="node in dragNodes"
+    <div v-if="selectedNodes.length > 0">
+      <div v-for="node in selectedNodes"
            :key="`node-ghost-${node.id}`"
            :style="getNodeStyle(node, true)"
            class="node ghost">
@@ -12,12 +12,9 @@
     <div v-for="node in visibleNodes"
         :key="`node-${node.id}`"
         :style="getNodeStyle(node, false)"
-        :class="{selected: isSelected(node), draging: drag && isSelected(node)}"
+        :class="{selected: node.selected, draging: drag && isSelected(node)}"
         class="node"
-        @mousedown="mousedown(node, $event)"
-        @mousemove="mousemove(node, $event)"
-        @mouseup="mouseup(node, $event)"
-        @mouseleave="mouseleave">
+        @mousedown.left="nodeMouseDown(node, $event)">
       <div class="debug">
         {{ node }}
       </div>
@@ -75,16 +72,6 @@
         </div>
       </div>    
     </div>
-
-    <!-- <div class="select-area"
-       :style="{zIndex: this.selectArea.drag ? 9999 : ''}"
-       @mousedown="selectMousedown"
-       @mousemove="selectMousemove"
-       @mouseup="selectMouseup"
-       >
-      <div class="select" :style="getSelectAreaStyle"></div>
-    </div> -->
-
   </div>
 </template>
 
@@ -127,6 +114,11 @@ export default {
 
         return r > 0 && b > 0 && l < this.grid.width && t < this.grid.height;
       });
+    },
+    selectedNodes() {
+      return this.nodes.filter((node) => {
+        return node.selected;
+      })
     },
   	getSelectAreaCoords() {
     	const { start, end } = this.selectArea;
@@ -206,75 +198,122 @@ export default {
       const {x, y, w, h} = this.getNodeMetrics(node, ghost);
 
       return {
-      	left: x + 'px',
-        top: y + 'px',
         width: w + 'px',
         height: h + 'px',
+        transform: `translate(${x}px, ${y}px)`,
         zIndex: z
       }
     },
-    mousedown(node, event) {
-    	if (event.which === 1) {
-        this.click = true;
-      }    
+
+    unselectAllNodes() {
+    	this.nodes.forEach((node) => {
+      	node.selected = false;
+      })
     },
-    mousemove(node, event) {
-    	if (this.click) {
-      	this.drag = true;
-      }
-    	if (this.drag) {
-      	if (!this.isSelected(node)) {
-      		if (event.ctrlKey) {
-            this.dragNodes.push(node);
-          } else {
-          	this.dragNodes = [node];
-          }
-        }
-      	
-      	this.dragNodes.forEach((node) => {
-          node.x += (event.movementX / this.grid.size);
-          node.y += (event.movementY / this.grid.size);
-          node.z = 9999;
-        });
-      }
+    selectOneNode(node) {
+    	this.unselectAllNodes();
+      node.selected = true;
     },
-    mouseup(node, event) {
-    	if (this.drag) {
-      	this.dragNodes.forEach((node) => {
-          node.x =  Math.round(node.x);
-          node.y = Math.round(node.y);
-          node.z = 1;
-        });
-        this.drag = false;
+
+    nodeMouseDown(node, event) {
+      // Select logic
+      if (event.ctrlKey) {
+      	node.selected = !node.selected
       } else {
-      	if (event.which === 1) {
-          if (event.ctrlKey) {
-            const index = this.dragNodes.indexOf(node)
-            if (index === -1) {
-              this.dragNodes.push(node);
-            } else {
-              this.dragNodes.splice(index, 1);
-            }
-          } else {
-            this.dragNodes = [node];
-          }
-        } else {
-          this.dragNodes = [];
+      	if (!node.selected) {
+        	this.selectOneNode(node);
         }
       }
-      this.click = false;
+
+      this.dragStart(node, event);
     },
-    mouseleave(event) {
-    	if (this.click && this.drag) {
-      	this.dragNodes.forEach((node) => {
+
+    // Node drag & drop
+    dragStart(node, event) {
+      // Create event listeners for drag and drop.
+      const moveFn = this.dragMove.bind(null, node);
+      window.addEventListener('mousemove', moveFn);
+      window.addEventListener('mouseup', this.dragEnd.bind(null, moveFn, node), { once: true });
+    },
+    dragMove(node, event) {
+      this.nodes.forEach((node) => {
+        if (node.selected) {
+          node.x = Math.round((node.x + (event.movementX / this.grid.size)) * 100) / 100;
+          node.y = Math.round((node.y + (event.movementY / this.grid.size)) * 100) / 100;
+          node.z = 9999;
+        }
+      });
+    },
+    dragEnd(moveFn, node, event) {
+      // Remove event listener
+      window.removeEventListener('mousemove', moveFn);
+
+      this.nodes.forEach((node) => {
+        if (node.selected) {
           node.x =  Math.round(node.x);
           node.y = Math.round(node.y);
           node.z = 1;
-        });
-        this.click = false;
-        this.drag = false;
-      }
+        }
+      });
     },
+
+    // mousemove(node, event) {
+    // 	if (this.click) {
+    //   	this.drag = true;
+    //   }
+    // 	if (this.drag) {
+    //   	if (!this.isSelected(node)) {
+    //   		if (event.ctrlKey) {
+    //         this.dragNodes.push(node);
+    //       } else {
+    //       	this.dragNodes = [node];
+    //       }
+    //     }
+      	
+    //   	this.dragNodes.forEach((node) => {
+    //       node.x += (event.movementX / this.grid.size);
+    //       node.y += (event.movementY / this.grid.size);
+    //       node.z = 9999;
+    //     });
+    //   }
+    // },
+    // mouseup(node, event) {
+    // 	if (this.drag) {
+    //   	this.dragNodes.forEach((node) => {
+    //       node.x =  Math.round(node.x);
+    //       node.y = Math.round(node.y);
+    //       node.z = 1;
+    //     });
+    //     this.drag = false;
+    //   } else {
+    //   	if (event.which === 1) {
+    //       if (event.ctrlKey) {
+    //         const index = this.dragNodes.indexOf(node)
+    //         if (index === -1) {
+    //           this.dragNodes.push(node);
+    //         } else {
+    //           this.dragNodes.splice(index, 1);
+    //         }
+    //       } else {
+    //         this.dragNodes = [node];
+    //       }
+    //     } else {
+    //       this.dragNodes = [];
+    //     }
+    //   }
+    //   this.click = false;
+    // },
+    // mouseleave(event) {
+    // 	if (this.click && this.drag) {
+    //   	this.dragNodes.forEach((node) => {
+    //       node.x =  Math.round(node.x);
+    //       node.y = Math.round(node.y);
+    //       node.z = 1;
+    //     });
+    //     this.click = false;
+    //     this.drag = false;
+    //   }
+    // },
     
     // selectMousedown(event) {
     // 	this.selectArea.drag = true;
