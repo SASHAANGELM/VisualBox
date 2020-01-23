@@ -3,20 +3,23 @@
     <div v-if="selectedNodes.length > 0">
       <div v-for="node in selectedNodes"
            :key="`node-ghost-${node.id}`"
-           :style="getNodeStyle(node, true)"
+           :style="getGhostNodeStyle(node)"
            class="node ghost">
       </div>
     </div>
-    
-    
+
     <div v-for="node in visibleNodes"
-        :key="`node-${node.id}`"
-        :style="getNodeStyle(node, false)"
-        :class="{selected: node.selected, draging: drag && isSelected(node)}"
-        class="node"
-        @mousedown.left="nodeMouseDown(node, $event)">
+         :key="`node-${node.id}`"
+         :style="getNodeStyle(node)"
+         :class="getNodeClass(node)"
+         class="node"
+         @mousedown.left="dragStart(node, $event)">
       <div class="debug">
         {{ node }}
+      </div>
+      <div class="relative px-3">
+        <div class="text-gray-600 text-xs">{{ node.kind }}</div>
+        <input v-model="node.value" class="w-full text-gray-300 bg-transparent">
       </div>
       <div class="inputs">
         <div v-for="(pin, pinIndex) in node.input" :key="'input_pin_' + pinIndex" :class="getPinClasses(pin)" class="pin">
@@ -44,7 +47,7 @@
           <!-- Variable Icon -->
 
         </div>
-      </div>  
+      </div>
       <div class="outputs">
         <div v-for="(pin, pinIndex) in node.output" :key="'output_pin_' + pinIndex" :class="getPinClasses(pin)" class="pin">
           <!-- Execute Icon -->
@@ -76,14 +79,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapGetters } from 'vuex';
 
 export default {
   data() {
     return {
-      click: false,
-      drag: false,
-      dragNodes: [],
       selectArea: {
         drag: false,
         start: {
@@ -98,12 +98,6 @@ export default {
     }
   },
   computed: {
-    grid() {
-      return this.$store.state.grid;
-    },
-    nodes() {
-      return this.$store.state.grid.nodes;
-    },
     visibleNodes() {
       return this.nodes.filter((node) => {
         const {x, y, w, h} = this.getNodeMetrics(node);
@@ -165,12 +159,11 @@ export default {
       	
       });
       return nodes
-    }
+    },
+
+    ...mapGetters(['grid', 'nodes'])
   },
   methods: {
-  	isSelected(node) {
-    	return this.dragNodes.includes(node) || this.getNodesInSelectedArea.includes(node);
-    },
     getPinClasses(pin) {
       const classes = {};
       classes.connected = pin.connections.length;
@@ -193,15 +186,29 @@ export default {
         h
       }
     },
-    getNodeStyle(node, ghost) {
-      const z = ghost ? 0 : node.z;
-      const {x, y, w, h} = this.getNodeMetrics(node, ghost);
-
+    getGhostNodeStyle(node) {
+      const {x, y, w, h} = this.getNodeMetrics(node, true);
       return {
         width: w + 'px',
         height: h + 'px',
         transform: `translate(${x}px, ${y}px)`,
-        zIndex: z
+        zIndex: 0
+      }
+    },
+    getNodeStyle(node) {
+      const {x, y, w, h} = this.getNodeMetrics(node, false);
+      return {
+        width: w + 'px',
+        height: h + 'px',
+        transform: `translate(${x}px, ${y}px)`,
+        zIndex: node.z
+      }
+    },
+    getNodeClass(node) {
+      return {
+        [node.kind]: true,
+        selected: node.selected,
+        dragging: node.dragging
       }
     },
 
@@ -215,7 +222,13 @@ export default {
       node.selected = true;
     },
 
-    nodeMouseDown(node, event) {
+    // Node drag & drop
+    dragStart(node, event) {
+      // Create event listeners for drag and drop.
+      const moveFn = this.dragMove.bind(null, node);
+      window.addEventListener('mousemove', moveFn);
+      window.addEventListener('mouseup', this.dragEnd.bind(null, moveFn, node), { once: true });
+
       // Select logic
       if (event.ctrlKey) {
       	node.selected = !node.selected
@@ -224,20 +237,11 @@ export default {
         	this.selectOneNode(node);
         }
       }
-
-      this.dragStart(node, event);
-    },
-
-    // Node drag & drop
-    dragStart(node, event) {
-      // Create event listeners for drag and drop.
-      const moveFn = this.dragMove.bind(null, node);
-      window.addEventListener('mousemove', moveFn);
-      window.addEventListener('mouseup', this.dragEnd.bind(null, moveFn, node), { once: true });
     },
     dragMove(node, event) {
       this.nodes.forEach((node) => {
         if (node.selected) {
+          node.dragging = true;
           node.x = Math.round((node.x + (event.movementX / this.grid.size)) * 100) / 100;
           node.y = Math.round((node.y + (event.movementY / this.grid.size)) * 100) / 100;
           node.z = 9999;
@@ -250,6 +254,7 @@ export default {
 
       this.nodes.forEach((node) => {
         if (node.selected) {
+          node.dragging = false;
           node.x =  Math.round(node.x);
           node.y = Math.round(node.y);
           node.z = 1;
@@ -361,13 +366,13 @@ export default {
     color: white;
     user-select: none;
     pointer-events: auto;
+    cursor: default;
     
     &.selected {
       border-color: #fff;
     }
     
-    &.draging {
-      box-shadow: 0 0 25px -15px rgba(33, 150, 243, 1);
+    &.dragging {
       opacity: 0.8;
       transition-duration: 0s;
       cursor: grabbing;
@@ -383,18 +388,37 @@ export default {
       pointer-events: none;
     }
 
+    &.boolean {
+      border-color: #f44336;
+    }
+    &.integer {
+      border-color: #00BCD4;
+    }
+    &.float {
+      border-color: #8BC34A;
+    }
+    &.string {
+      border-color: #3F51B5;
+    }
+    &.object {
+      border-color: #FF9800;
+    }
+    &.function {
+      border-color: #2196F3;
+    }
+
     .debug {
       position: absolute;
       font-size: 10px;
-      opacity: 0.5;
+      opacity: 0.1;
     }
 
     .inputs {
-      left: -14px;
+      left: -13px;
     }
 
     .outputs {      
-      right: -14px;
+      right: -13px;
     }
 
     .inputs, .outputs {
@@ -435,6 +459,7 @@ export default {
         }
 
         &.execute {
+          margin: 3px 2px 3px 4px;
 
           &:hover, &.connected {
 

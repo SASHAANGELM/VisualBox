@@ -25,7 +25,7 @@ export default class Node {
     this.z = mergedProps.z;
     this.value = mergedProps.value;
     this.input = mergedProps.input;
-    this.raw = `'${this.value}'`;
+    this.raw = typeof this.value === 'string' ? `"${this.value}"` : `${this.value}`;
     this.output = mergedProps.output;
     this.selected = mergedProps.selected
 
@@ -33,7 +33,11 @@ export default class Node {
   }
 
   get kind() {
-    return (typeof this.value);
+    const type = typeof this.value;
+    if (type === 'number') {
+      return this.value % 1 === 0 ? 'integer' : 'float';
+    }
+    return type;
     // const test = typeof this.value === 'string' ? this.raw : this.value;
     // return (new Function( `return (typeof ${test})` )());
   }

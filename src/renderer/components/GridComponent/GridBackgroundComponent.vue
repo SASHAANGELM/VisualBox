@@ -3,22 +3,22 @@
     <canvas id="grid"
             :width="grid.width"
             :height="grid.height"
-            @mousedown='gridDown'
-            @mousemove='gridMove'
-            @mouseup='gridUp'
-            @mouseleave="gridUp">
+            @click.left="unselectAllNodes"
+            @mousedown.middle="dragStart"
+            @mousedown.right="dragStart">
     </canvas>
     <div class="debug">
       width: {{ grid.width }} <br>
       height: {{ grid.height }} <br>
       x: {{ grid.x }} <br>
       y: {{ grid.y }} <br>
-      drag: {{ drag }} <br>
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 export default {
   data() {
     return {
@@ -33,14 +33,11 @@ export default {
           color: 'rgba(60,60,60,1)',
           size: 24
         }
-      ],
-      drag: false,
+      ]
     };
   },
   computed: {
-    grid() {
-      return this.$store.state.grid;
-    }
+    ...mapGetters(['grid', 'nodes'])
   },
   mounted() {
   	window.addEventListener('resize', this.resizeEvent);
@@ -105,30 +102,34 @@ export default {
           }
         })        
       });
-		},
-    gridDown(event) {
-    	this.drag = true;
-		},
-    gridMove(event) {
-    	if (this.drag) {
-        this.grid.x -= event.movementX;
-        this.grid.y -= event.movementY;
-        this.renderGrid();
-      }
-		},
-    gridUp(event) {
-    	this.drag = false;
     },
+    unselectAllNodes() {
+    	this.nodes.forEach((node) => {
+      	node.selected = false;
+      })
+    },
+
+    dragStart(event) {
+      window.addEventListener('mousemove', this.dragMove);
+      window.addEventListener('mouseup', this.dragEnd, { once: true });
+    },
+    dragMove(event) {
+      this.grid.x -= event.movementX;
+      this.grid.y -= event.movementY;
+      this.renderGrid();
+    },
+    dragEnd(event) {
+      window.removeEventListener('mousemove', this.dragMove);
+    },
+
     keydownEvent(event) {
-    	// event.preventDefault();
-    	console.log('keypress', event);
-      if(event.key === 'h' && event.ctrlKey) {
+      if(event.ctrlKey && event.key === 'h') {
         this.gridCentering();
       }
     },
     gridCentering() {
       // Take center from width and subtract big
-      const bigDotsSize = this.dots[this.dots.length - 1].size
+      const bigDotsSize = this.dots[this.dots.length - 1].size;
       this.grid.x = -Math.round(this.grid.width / 2) + (this.grid.size * (bigDotsSize/ 2));
       this.grid.y = -Math.round(this.grid.height / 2) + (this.grid.size * 8);
       this.renderGrid();

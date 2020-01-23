@@ -12,85 +12,15 @@ const store = new Vuex.Store({
       y: 0,
       width: 0,
       height: 0,
-      nodes: [
-        // {
-        //   id: 0,
-        //   x: 1,
-        //   y: 1,
-        //   w: 8,
-        //   h: 4,
-        //   z: 5,
-        //   name: 'log',
-        //   kind: 'method',
-        //   input: [
-        //     {
-        //       type: 'property',
-        //       connections: [
-        //       ]
-        //     },
-        //     {
-        //       type: 'execute',
-        //       connections: [
-        //       ]
-        //     },
-        //     {
-        //       type: 'variable',
-        //       connections: [
-        //         {
-                
-        //         }
-        //       ]
-        //     },
-        //   ],
-        //   output: [
-        //     {
-        //       type: 'property',
-        //       connections: [
-        //       ]
-        //     },
-        //     {
-        //       type: 'execute',
-        //       connections: [
-        //         {
-                
-        //         }
-        //       ]
-        //     },
-        //     {
-        //       type: 'variable',
-        //       connections: [
-              
-        //       ]
-        //     }
-        //   ]
-        // },
-        // {
-        //   id: 1,
-        //   x: 1,
-        //   y: 7,
-        //   w: 8,
-        //   h: 2,
-        //   z: 6,
-        //   name: 'console',
-        //   kind: 'object',
-        //   output: [
-        //     {
-        //       type: 'variable',
-        //       connections: []
-        //     },
-        //   ]
-        // },
-        // {
-        //   id: 2,
-        //   x: 1,
-        //   y: 12,
-        //   w: 8,
-        //   h: 4,
-        //   z: 7,
-        //   name: '25.56',
-        //   kind: 'float',
-        // }
-      ],
+      nodes: [],
+    }
+  },
+  getters: {
+    grid: (state) => {
+      return state.grid;
+    },
+    nodes: (state) => {
+      return state.grid.nodes;
     }
   }
 });
@@ -98,25 +28,54 @@ store.state.grid.nodes.push(
   new Node({
     x: 0,
     y: 0,
-    z: 7,
-    value: 55,
+    h: 2,
+    value: 12,
+    output: [
+      {
+        type: 'execute',
+        connections: []
+      }
+    ]
   }),
   new Node({
-    x: 11,
-    y: 1,
-    z: 7,
+    x: 0,
+    y: 4,
+    h: 2,
+    value: 3.14,
+    output: [
+      {
+        type: 'execute',
+        connections: []
+      }
+    ]
+  }),
+  new Node({
+    x: 0,
+    y: 8,
+    h: 2,
     value: 'test',
+    output: [
+      {
+        type: 'variable',
+        connections: []
+      }
+    ]
   }),
   new Node({
-    x: 1,
-    y: 6,
-    z: 7,
+    x: 0,
+    y: 12,
+    h: 2,
     value: true,
+    output: [
+      {
+        type: 'variable',
+        connections: []
+      }
+    ]
   }),
   new Node({
-    x: 7,
-    y: 11,
-    z: 7,
+    x: 0,
+    y: 16,
     value: {},
   }),
 );
