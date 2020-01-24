@@ -18,8 +18,13 @@
         {{ node }}
       </div>
       <div class="relative px-3">
-        <div class="text-gray-600 text-xs">{{ node.kind }}</div>
-        <input v-model="node.value" class="w-full text-gray-300 bg-transparent">
+        <!-- <div :class="{empty: node.value === undefined || node.value === null || node.value.length === 0}" class="form-control">
+          <div class="placeholder">{{ node.kind }}</div>
+          <input v-model="node.value" class="input w-full text-gray-300 bg-transparent hover:bg-gray-800" @mousedown.stop @input="nodeInput(node)">
+        </div> -->
+
+        <InputComponent :node="node"></InputComponent>
+        
       </div>
       <div class="inputs">
         <div v-for="(pin, pinIndex) in node.input" :key="'input_pin_' + pinIndex" :class="getPinClasses(pin)" class="pin">
@@ -81,7 +86,12 @@
 <script>
 import { mapGetters } from 'vuex';
 
+import InputComponent from '@/components/GridComponent/GridNodesComponent/InputComponent';
+
 export default {
+  components: {
+    InputComponent
+  },
   data() {
     return {
       selectArea: {
@@ -359,17 +369,12 @@ export default {
   overflow: hidden;
 
   .node {
-    position: absolute;
-    background-color: rgba(40, 40, 40, 1);
+    @apply absolute bg-gray-900 text-white select-none pointer-events-auto cursor-default;
     border: 2px solid rgba(33, 150, 243, 1);
-    border-radius: 12px; 
-    color: white;
-    user-select: none;
-    pointer-events: auto;
-    cursor: default;
+    border-radius: 12px;
     
     &.selected {
-      border-color: #fff;
+      @apply border-white;
     }
     
     &.dragging {
@@ -388,14 +393,14 @@ export default {
       pointer-events: none;
     }
 
-    &.boolean {
-      border-color: #f44336;
-    }
     &.integer {
       border-color: #00BCD4;
     }
     &.float {
       border-color: #8BC34A;
+    }
+    &.boolean {
+      border-color: #f44336;
     }
     &.string {
       border-color: #3F51B5;
@@ -405,6 +410,12 @@ export default {
     }
     &.function {
       border-color: #2196F3;
+    }
+    &.undefined {
+      border-color: #795548;
+    }
+    &.null {
+      border-color: #795548;
     }
 
     .debug {
@@ -434,67 +445,19 @@ export default {
         width: 18px;
         height: 18px;
         margin: 3px;
-        
-        &.connected {
-
-          .point {
-            background-color: rgba(33, 150, 243, 1);
-          }
-
-          &.execute {
-
-          }
-        }
-
-        .point {
-          position: relative;
-          height: 100%;
-          background-color: rgba(40, 40, 40, 1);
-          border: 2px solid rgba(33, 150, 243, 1);
-          border-radius: 999px;
-
-          &:hover {
-            background-color: rgba(60, 60, 60, 1);
-          }
-        }
 
         &.execute {
           margin: 3px 2px 3px 4px;
-
-          &:hover, &.connected {
-
-            svg.icon path {
-              fill: #fff;
-            }
-          }
-
-          svg {
-            position: absolute;
-
-            &.icon-stroke {
-
-              path {
-                fill: rgba(40,40,40,1);
-              }
-            }
-
-            &.icon {
-              margin: 3px;
-
-              path {
-                fill: transparent;
-                stroke: #fff;
-                stroke-width: 2px;
-              }
-            }
-          }
         }
-        &.variable {
+        &.execute, &.variable {
 
           &:hover, &.connected {
 
-            svg.icon rect {
-              fill: #fff;
+            svg.icon {
+
+              rect, path {
+                fill: #fff;
+              }
             }
           }
 
@@ -503,15 +466,15 @@ export default {
 
             &.icon-stroke {
 
-              rect {
-                fill: rgba(40,40,40,1);
+              rect, path {
+                fill: #22292F;
               }
             }
 
             &.icon {
               margin: 3px;
 
-              rect {
+              rect, path {
                 fill: transparent;
                 stroke: #fff;
                 stroke-width: 2px;

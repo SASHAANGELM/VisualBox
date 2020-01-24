@@ -8,38 +8,68 @@ export default class Node {
       w: 8,
       h: 4,
       z: 1,
-      value: '25.56',
-      kind: 'float',
+      type: 'VARIABLE',
+      value: undefined,
       input: [],
       output: [],
-      selected: false
+      selected: false,
+      dragging: false
     };
 
-    const mergedProps = {...defaultProps, ...props };
+    props = {...defaultProps, ...props };
     
-    this.id = mergedProps.id;
-    this.x = mergedProps.x;
-    this.y = mergedProps.y;
-    this.w = mergedProps.w;
-    this.h = mergedProps.h;
-    this.z = mergedProps.z;
-    this.value = mergedProps.value;
-    this.input = mergedProps.input;
-    this.raw = typeof this.value === 'string' ? `"${this.value}"` : `${this.value}`;
-    this.output = mergedProps.output;
-    this.selected = mergedProps.selected
+    this.id = props.id;
+    this.x = props.x;
+    this.y = props.y;
+    this.w = props.w;
+    this.h = props.h;
+    this.z = props.z;
+    this.value = `${props.value}`;
+    this.selected = props.selected;
+    this.dragging = props.dragging;
+
+    this.input = props.input.map((pinType) => {
+      return {
+        type: pinType,
+        connections: []
+      }
+    });
+    this.output = props.output.map((pinType) => {
+      return {
+        type: pinType,
+        connections: []
+      }
+    });
 
     console.log('node', this);
   }
 
   get kind() {
+    if (this.value === null) {
+      return 'null';
+    }
     const type = typeof this.value;
     if (type === 'number') {
-      return this.value % 1 === 0 ? 'integer' : 'float';
+      return Number.isInteger(this.value) ? 'integer' : 'float';
     }
     return type;
-    // const test = typeof this.value === 'string' ? this.raw : this.value;
-    // return (new Function( `return (typeof ${test})` )());
   }
 
+  set value(value) {
+    this.raw = value;
+    try {
+      value = JSON.parse(value);
+    } catch(e) {
+      if (value === 'undefined') {
+        value = undefined;
+      } else {
+        value = String(value);
+      }
+    }
+    this._value = value;
+  }
+
+  get value() {
+    return this._value;
+  }
 }

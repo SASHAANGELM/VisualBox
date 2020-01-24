@@ -152,14 +152,13 @@ export default {
         }
 
         .box {
+          @apply bg-gray-900;
           position: absolute;
           top: 50%;
           left: 50%;
           width: 10px;
           height: 10px;
           border: 1px solid rgba(#fff, 0.5);
-          background-color: rgb(40,48,56);
-          
           
           &:nth-child(1) {
             margin: -6px 0 0 -6px;

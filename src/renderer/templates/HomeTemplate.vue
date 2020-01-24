@@ -17,11 +17,7 @@ export default {
 
 <style lang="scss">
   .home-template {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background-color: rgb(40,40,40);
-    color: rgba(255,255,255,0.5);
+    @apply flex flex-col min-h-screen bg-gray-900 text-gray-500;
 
     .content {
       flex: 1 0 auto;
